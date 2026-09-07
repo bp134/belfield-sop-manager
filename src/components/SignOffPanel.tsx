@@ -48,8 +48,12 @@ export default function SignOffPanel({
       }
       setSigned(true);
       setSignedTimestamp(data.signedAt ?? new Date().toISOString());
-      router.refresh();
-    } catch (err) {
+      setRedirecting(true);
+	setTimeout(() => {
+  	router.push('/');
+  	router.refresh();
+	}, 1200);
+	catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSubmitting(false);
@@ -62,7 +66,9 @@ export default function SignOffPanel({
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-8 w-8 shrink-0 text-nhs-green" />
           <div>
-            <p className="font-semibold text-green-900">You have signed this SOP</p>
+            <p className="font-semibold text-green-900">
+  		{redirecting ? 'Signed successfully! Returning to dashboard...' : 'You have signed this SOP'}
+		</p>
             {signedTimestamp && (
               <p className="text-sm text-green-800">Signed on {formatDateTime(signedTimestamp)}</p>
             )}
@@ -117,3 +123,4 @@ export default function SignOffPanel({
     </div>
   );
 }
+
