@@ -3,6 +3,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
+import { AlertTriangle, Building2, Phone, Mail } from 'lucide-react';
 function isCautionText(children: React.ReactNode): boolean {
   const text = String(children);
   return /caution|warning|important|danger/i.test(text.slice(0, 40));
