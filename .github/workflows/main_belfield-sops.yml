@@ -23,24 +23,46 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: npm install and build
+      - name: Verify config and build
         run: |
+          echo "=== Check if next.config.js exists ==="
+          ls -la next.config.js || ls -la next.config.mjs || echo "CONFIG FILE MISSING!"
+
+          echo "=== Running npm install ==="
           npm install
+
+          echo "=== Running build ==="
           npm run build
+
+          echo "=== Check contents of .next directory ==="
+          ls -la .next
 
       - name: Prepare standalone deployment package
         run: |
           mkdir -p deploy-pkg
-          # Copy standalone output including hidden files (.next)
-          cp -r .next/standalone/. deploy-pkg/
-          
-          # Next.js standalone requires static assets copied explicitly
-          mkdir -p deploy-pkg/.next/static
-          cp -r .next/static/. deploy-pkg/.next/static/
-          
-          # Copy public directory if it exists
-          if [ -d "public" ]; then cp -r public/. deploy-pkg/public/; fi
 
+          # Check if standalone directory exists anywhere in .next
+          if [ -d ".next/standalone" ]; then
+            echo "Standalone folder found! Copying files..."
+            cp -r .next/standalone/. deploy-pkg/
+          else
+            echo "CRITICAL: .next/standalone does not exist!"
+            echo "Listing full directory tree for debugging:"
+            find . -maxdepth 3 -not -path '*/.*' -o -name '.next*'
+            exit 1
+          fi
+
+          # Copy static files
+          mkdir -p deploy-pkg/.next/static
+          if [ -d ".next/static" ]; then
+            cp -r .next/static/. deploy-pkg/.next/static/
+          fi
+
+          # Copy public folder if present
+          if [ -d "public" ]; then
+            cp -r public/. deploy-pkg/public/
+          fi
+          
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
