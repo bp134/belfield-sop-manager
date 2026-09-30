@@ -32,20 +32,24 @@ jobs:
         run: |
           mkdir -p deploy-pkg
 
-          # Find where server.js was created inside .next/standalone
-          STANDALONE_DIR=$(find .next/standalone -name "server.js" -exec dirname {} \;)
-          echo "Found standalone root at: $STANDALONE_DIR"
-          
-          # Copy all standalone server files to deployment root
-          cp -r "$STANDALONE_DIR"/. deploy-pkg/
+          # Check if standalone directory exists anywhere in .next
+          if [ -d ".next/standalone" ]; then
+            echo "Standalone folder found! Copying files..."
+            cp -r .next/standalone/. deploy-pkg/
+          else
+            echo "CRITICAL: .next/standalone does not exist!"
+            echo "Listing full directory tree for debugging:"
+            find . -maxdepth 3 -not -path '*/.*' -o -name '.next*'
+            exit 1
+          fi
 
-          # Copy static files required by Next.js
+          # Copy static files
           mkdir -p deploy-pkg/.next/static
           if [ -d ".next/static" ]; then
             cp -r .next/static/. deploy-pkg/.next/static/
           fi
 
-          # Copy public static assets if present
+          # Copy public folder if present
           if [ -d "public" ]; then
             cp -r public/. deploy-pkg/public/
           fi
@@ -83,4 +87,4 @@ jobs:
         with:
           app-name: 'belfield-sops'
           slot-name: 'Production'
-          package: .
+          package: deploy-pkg
