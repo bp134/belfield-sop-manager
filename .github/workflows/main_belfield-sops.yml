@@ -31,10 +31,15 @@ jobs:
       - name: Prepare standalone deployment package
         run: |
           mkdir -p deploy-pkg
-          cp -r .next/standalone/* deploy-pkg/
+          # Copy standalone output including hidden files (.next)
+          cp -r .next/standalone/. deploy-pkg/
+          
+          # Next.js standalone requires static assets copied explicitly
           mkdir -p deploy-pkg/.next/static
-          cp -r .next/static deploy-pkg/.next/
-          if [ -d "public" ]; then cp -r public deploy-pkg/; fi
+          cp -r .next/static/. deploy-pkg/.next/static/
+          
+          # Copy public directory if it exists
+          if [ -d "public" ]; then cp -r public/. deploy-pkg/public/; fi
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
