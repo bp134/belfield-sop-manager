@@ -32,6 +32,7 @@ export default function SignOffPanel({
   const [error, setError] = useState<string | null>(null);
   const [signed, setSigned] = useState(initiallySigned);
   const [signedTimestamp, setSignedTimestamp] = useState<string | null>(signedAt);
+  const [redirecting, setRedirecting] = useState(false);
 
   async function handleSign() {
     setSubmitting(true);
@@ -48,7 +49,12 @@ export default function SignOffPanel({
       }
       setSigned(true);
       setSignedTimestamp(data.signedAt ?? new Date().toISOString());
-      router.refresh();
+      setRedirecting(true);
+
+      setTimeout(() => {
+        router.push('/');
+        router.refresh();
+      }, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -59,14 +65,19 @@ export default function SignOffPanel({
   if (signed) {
     return (
       <div className="card border-nhs-green/40 bg-green-50 p-5">
-        <div className="flex items-center gap-3">
-          <CheckCircle2 className="h-8 w-8 shrink-0 text-nhs-green" />
-          <div>
-            <p className="font-semibold text-green-900">You have signed this SOP</p>
-            {signedTimestamp && (
-              <p className="text-sm text-green-800">Signed on {formatDateTime(signedTimestamp)}</p>
-            )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-8 w-8 shrink-0 text-nhs-green" />
+            <div>
+              <p className="font-semibold text-green-900">
+                {redirecting ? 'Signed successfully! Returning to dashboard...' : 'You have signed this SOP'}
+              </p>
+              {signedTimestamp && (
+                <p className="text-sm text-green-800">Signed on {formatDateTime(signedTimestamp)}</p>
+              )}
+            </div>
           </div>
+          {redirecting && <Loader2 className="h-5 w-5 animate-spin text-nhs-green" />}
         </div>
       </div>
     );
